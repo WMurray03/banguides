@@ -9,10 +9,14 @@ import axios from 'axios';
 function Todo() {
 
     // ---- Bunch of Consts ----
-    const URL = 'http://localhost:3000';
+    const URL = 'http://localhost:3030';
 
     // ---- Bunch of useStates ----
     const [todos, setTodos] = useState([])
+
+    const [users, setUsers] = useState([])
+
+    const [currentUser, setCurrentUser] = useState('')
 
     const [timeOfDay, setTimeOfDay] = useState('')
 
@@ -25,7 +29,7 @@ function Todo() {
     });
     const { vertical, horizontal, open } = snackbarState;
 
-    const [createTextBoxValue, setCreateTextBoxValue] = useState("");
+    const [createTextBoxValue, setCreateTextBoxValue] = useState('');
 
     const [notificationMessage, setNotificationMessage] = useState('');
 
@@ -46,22 +50,85 @@ function Todo() {
 
     useEffect(() => {
         updateClock()
-        fetchTasks()
+        checkUser()
     }, []);
 
     setInterval(updateClock, 1000)
 
-    // ---- Data Handling ----
-    const fetchTasks = async () => {
+    // ---- User Handling ----
+    const checkUser = async () => {
         try {
-            const response = await axios.get(`${URL}/tasks`);
+            const response = await axios.get(`${URL}/uuid4browser`);
+            let updatedUsers = response.data
+            setUsers(updatedUsers)
+
+            let user = localStorage.getItem('user')
+            setCurrentUser(user)
+
+            if (user === null) {
+                createUser().then(checkUser)
+            } else {
+                console.log("Logged in as: " + user)
+                for (let i = 0; i < updatedUsers.length; i++) {
+                    if (updatedUsers[i].uuid === user.toString()) {
+                        fetchTasks(user)
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const createUser = async () => {
+        let i = users.length;
+        let id = uuid()
+
+        // Updates
+        const updatedUsers = [...users]
+        updatedUsers.splice(i + 1, 0, {
+            uuid: id
+        })
+
+        // Updates state
+        setCurrentUser(id)
+        localStorage.setItem('user', id)
+        setUsers(updatedUsers)
+
+        // POST request
+        try {
+            // Notification
+            setNotificationMessage("Pending")
+            const response = await fetch(`${URL}/uuid4browser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedUsers[i]),
+            });
+
+            if (response.ok) {
+                // Notification
+                setNotificationMessage("User Created")
+                setSnackbarState({ ...snackbarState, open: true });
+            } else {
+                console.error('Failed to create field.');
+            }
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
+    }
+
+    // ---- Task Handling ----
+    const fetchTasks = async (currentUser) => {
+        try {
+            const response = await axios.get(`${URL}/tasks4uuid/${currentUser}`);
             setTodos(response.data);
         } catch (error) {
             console.error(error);
         }
     };
 
-    // ---- Todo Functions ----
     const createTask = async () => {
         let i = todos.length;
 
@@ -71,19 +138,21 @@ function Todo() {
             // Updates
             const updatedTodos = [...todos]
             updatedTodos.splice(i + 1, 0, {
+                id: uuid(),
                 content: createTextBoxValue,
                 iscompleted: false,
-                id: uuid()
+                browseruuid: currentUser
             })
 
             // Updates state
+            console.log(updatedTodos)
             setTodos(updatedTodos)
 
             // POST request
             try {
                 // Notification
                 setNotificationMessage("Pending")
-                const response = await fetch(`${URL}/tasks`, {
+                const response = await fetch(`${URL}/tasks4uuid`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -96,7 +165,9 @@ function Todo() {
                     setNotificationMessage("Task Created")
                     setSnackbarState({ ...snackbarState, open: true });
                 } else {
-                    console.error('Failed to create field.');
+                    // Notification
+                    setNotificationMessage("Error")
+                    setSnackbarState({ ...snackbarState, open: true });
                 }
             } catch (error) {
                 console.error('An error occurred:', error);
@@ -113,12 +184,12 @@ function Todo() {
             // Notification
             setNotificationMessage("Pending")
             setSnackbarState({ ...snackbarState, open: true });
-            const response = await fetch(`${URL}/tasks/${todos[i].id}`, {
+            const response = await fetch(`${URL}/tasks4uuid/${todos[i].id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted }),
+                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted, browseruuid: currentUser }),
             });
 
             if (response.ok) {
@@ -126,7 +197,9 @@ function Todo() {
                 setNotificationMessage("Task Updated")
                 setSnackbarState({ ...snackbarState, open: true });
             } else {
-                console.error('Failed to update field.');
+                // Notification
+                setNotificationMessage("Error")
+                setSnackbarState({ ...snackbarState, open: true });
             }
         } catch (error) {
             console.error('An error occurred:', error);
@@ -145,12 +218,12 @@ function Todo() {
             // Notification
             setNotificationMessage("Pending")
             setSnackbarState({ ...snackbarState, open: true });
-            const response = await fetch(`${URL}/tasks/${todos[i].id}}`, {
+            const response = await fetch(`${URL}/tasks4uuid/${todos[i].id}}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted }),
+                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted, browseruuid: currentUser }),
             });
 
             if (response.ok) {
@@ -158,7 +231,9 @@ function Todo() {
                 setNotificationMessage("Task Deleted")
                 setSnackbarState({ ...snackbarState, open: true });
             } else {
-                console.error('Failed to delete field.');
+                // Notification
+                setNotificationMessage("Error")
+                setSnackbarState({ ...snackbarState, open: true });
             }
         } catch (error) {
             console.error('An error occurred:', error);
@@ -173,16 +248,18 @@ function Todo() {
 
         // PUT Request
         try {
-            const response = await fetch(`${URL}/tasks/${todos[i].id}`, {
+            const response = await fetch(`${URL}/tasks4uuid/${todos[i].id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted }),
+                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted, browseruuid: currentUser }),
             });
 
             if (!response.ok) {
-                console.error('Failed to update field.');
+                // Notification
+                setNotificationMessage("Error")
+                setSnackbarState({ ...snackbarState, open: true });
             }
         } catch (error) {
             console.error('An error occurred:', error);
@@ -206,7 +283,7 @@ function Todo() {
     const sendTaskValueChange = (index) => {
         updateTask(index)
     }
-    
+
     const action = (
         <React.Fragment>
             <IconButton
