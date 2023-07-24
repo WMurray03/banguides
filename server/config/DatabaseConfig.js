@@ -5,7 +5,7 @@ dotenv.config();
 
 // Configuring CORS
 exports.corsOptions = {
-	origin: 'https://localhost:3030',
+	origin: 'https://todo-514a.onrender.com',
 	optionsSuccessStatus: 200,
 };
 
