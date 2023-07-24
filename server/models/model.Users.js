@@ -1,18 +1,12 @@
-const { pool } = require('../config/DatabaseConfig')
+const {pool} = require('../config/DatabaseConfig');
 
 // GET all users
-exports.selectUsers = async () => {
-    return pool.query('SELECT * FROM uuid4browser')
-    .then((result) => {
-        return result.rows;
-    })
-}
+exports.selectUsers = async () => pool.query('SELECT * FROM uuid4browser')
+	.then(result => result.rows);
 
-exports.createUser = async (uuid) => {
-    return pool.query('INSERT INTO uuid4browser(uuid) VALUES ($1);', [uuid])
-}
+exports.createUser = async uuid => pool.query('INSERT INTO uuid4browser(uuid) VALUES ($1);', [uuid]);
 
-// app.get('/uuid4browser', async (req, res) => {
+// App.get('/uuid4browser', async (req, res) => {
 //     try {
 //         const client = await pool.connect();
 //         const result = await client.query('SELECT * FROM uuid4browser');

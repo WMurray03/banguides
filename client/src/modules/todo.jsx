@@ -70,7 +70,6 @@ function Todo() {
             if (user === null) {
                 createUser().then(checkUser)
             } else {
-                console.log("Logged in as: " + user)
                 for (let i = 0; i < updatedUsers.users.length; i++) {
                     if (updatedUsers.users[i].uuid === user.toString()) {
                         fetchTasks(user)
