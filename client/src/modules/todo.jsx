@@ -9,7 +9,7 @@ import axios from 'axios';
 function Todo() {
 
     // ---- Bunch of Consts ----
-    const URL = 'https://todo-514a.onrender.com';
+    const URL = 'http://localhost:3030';
 
     // ---- Bunch of useStates ----
     const [todos, setTodos] = useState([])
