@@ -1,0 +1,2 @@
+code that doesn't fit for models, config or routes etc
+calculating the current date e.g

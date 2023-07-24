@@ -51,6 +51,8 @@ function Todo() {
     useEffect(() => {
         updateClock()
         checkUser()
+
+           // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     setInterval(updateClock, 1000)
@@ -69,8 +71,8 @@ function Todo() {
                 createUser().then(checkUser)
             } else {
                 console.log("Logged in as: " + user)
-                for (let i = 0; i < updatedUsers.length; i++) {
-                    if (updatedUsers[i].uuid === user.toString()) {
+                for (let i = 0; i < updatedUsers.users.length; i++) {
+                    if (updatedUsers.users[i].uuid === user.toString()) {
                         fetchTasks(user)
                     }
                 }
@@ -123,7 +125,7 @@ function Todo() {
     const fetchTasks = async (currentUser) => {
         try {
             const response = await axios.get(`${URL}/tasks4uuid/${currentUser}`);
-            setTodos(response.data);
+            setTodos(response.data.task);
         } catch (error) {
             console.error(error);
         }
@@ -209,6 +211,7 @@ function Todo() {
     const deleteTask = async (i, e) => {
         const updatedTodos = [...todos]
         updatedTodos.splice(i, 1)
+        console.log(updatedTodos)
 
         // Updates Localstorage
         setTodos(updatedTodos)
@@ -218,12 +221,11 @@ function Todo() {
             // Notification
             setNotificationMessage("Pending")
             setSnackbarState({ ...snackbarState, open: true });
-            const response = await fetch(`${URL}/tasks4uuid/${todos[i].id}}`, {
+            const response = await fetch(`${URL}/tasks4uuid/${todos[i].id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: todos[i].id, content: todos[i].content, iscompleted: todos[i].iscompleted, browseruuid: currentUser }),
+                }
             });
 
             if (response.ok) {

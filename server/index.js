@@ -1,8 +1,3 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { Pool } = require('pg');
-const path = require('path');
-
 // const app = express();
 const app = require('./server.js')
 
