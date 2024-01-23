@@ -1,10 +1,10 @@
-const {pool} = require('../config/DatabaseConfig');
+const { pool } = require("../config/DatabaseConfig");
 
-// GET all users
-exports.selectUsers = async () => pool.query('SELECT * FROM uuid4browser')
-	.then(result => result.rows);
+exports.selectUsers = async () =>
+  pool.query("SELECT * FROM uuid4browser").then((result) => result.rows);
 
-exports.createUser = async uuid => pool.query('INSERT INTO uuid4browser(uuid) VALUES ($1);', [uuid]);
+exports.createUser = async (uuid) =>
+  pool.query("INSERT INTO uuid4browser(uuid) VALUES ($1);", [uuid]);
 
 // App.get('/uuid4browser', async (req, res) => {
 //     try {
@@ -18,7 +18,6 @@ exports.createUser = async uuid => pool.query('INSERT INTO uuid4browser(uuid) VA
 //     }
 // });
 
-// POST new user
 // function postUser() {
 //     return app.post('/uuid4browser', async (req, res) => {
 //         const newUser = req.body;
